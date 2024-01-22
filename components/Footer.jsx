@@ -1,6 +1,6 @@
 import Container from '@/components/Container'
 import Logo from './logo'
-import Social from './Social'
+// import Social from './Social'
 import styles from '@/styles/footer.module.scss'
 
 export default function Footer() {
@@ -9,7 +9,7 @@ export default function Footer() {
       <Container>
         <div className={styles.flexContainer}>
           <Logo />
-          <Social/>
+          {/* <Social/> */}
         </div>
       </Container>
     </footer>

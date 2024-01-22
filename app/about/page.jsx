@@ -1,4 +1,5 @@
-//import Meta from '@/components/Meta'
+import { siteMeta } from 'lib/constants'
+import { openGraphMetadata, twitterMetadata } from 'lib/baseMetadata'
 import Container from '@/components/Container'
 import Hero from '@/components/hero'
 import PostBody from '@/components/PostBody'
@@ -9,20 +10,13 @@ import {
   TwoColumnSidebar,
 } from '@/components/TwoColumn'
 import Accordion from '@/components/Accodion'
-import Image from 'next/legacyimage'
+import Image from 'next/legacy/image'
 import eyecatch from 'images/about.jpg'
+
 
 export default function About() {
   return (
     <Container>
-      {/* <Meta
-        pageTitle = 'アバウト'
-        pageDesc = 'About development activities'
-        pageImg = {eyecatch.src}
-        pageImgW={eyecatch.width}
-        pageImgH={eyecatch.height}
-      /> */}
-
       <Hero title="About" subtitle="About development activities" />
       <figure>
         <Image
@@ -76,3 +70,36 @@ export default function About() {
     </Container>
   )
 }
+
+//meta
+const { siteTitle, siteUrl } = siteMeta
+const pageTitle = 'アバウト'
+const pageDesc = 'About development activities'
+const ogpTitle = `${pageTitle} | ${siteTitle}`
+const ogpUrl = new URL('/about', siteUrl).toString()
+
+export const metadata = {
+  title: pageTitle,
+  description: pageDesc,
+
+  openGraph: {
+    ...openGraphMetadata,
+    title: ogpTitle,
+    description: pageDesc,
+    url: ogpUrl,
+    images: [
+      {
+      url: eyecatch.src,
+      width: eyecatch.width,
+      height: eyecatch.height,
+      },
+    ],
+  },
+  twitter: {
+    ...twitterMetadata,
+      title: ogpTitle,
+      description: pageDesc,
+      images: [eyecatch.src],
+      },
+    }
+  

@@ -1,3 +1,9 @@
+import {
+  baseMetadata,
+  openGraphMetadata,
+  twitterMetadata,
+} from '@/lib/baseMetadata'
+
 import '@/styles/globals.scss';
 import Layout from '@/components/layout';
 import { siteMeta } from '@/lib/constants';
@@ -15,4 +21,14 @@ export default function RootLayout({ children }) {
     </body>
   </html>
   );
+}
+
+export const metadata = {
+  ...baseMetadata,
+  openGraph: {
+    ...openGraphMetadata,
+  },
+  twitter: {
+    ...twitterMetadata,
+  },
 }

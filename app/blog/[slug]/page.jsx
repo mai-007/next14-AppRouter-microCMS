@@ -1,7 +1,6 @@
 import { getPostBySlug, getAllSlugs } from '@/lib/api'
 import { extractText } from '@/lib/extract-text'
 import { prevNextPost } from '@/lib/prev-next-post'
-import Meta from '@/components/meta'
 import Container from '@/components/Container'
 import PostHeader from '@/components/PostHeader'
 import PostBody from '@/components/PostBody'
@@ -9,29 +8,29 @@ import { TwoColumn, TwoColumnMain, TwoColumnSidebar }  from '@/components/TwoCol
 import ConvertBody from '@/components/ContentBody'
 import PostCategories from '@/components/PostCategories'
 import Pagination from '@/components/Pagination'
-import Image from 'next/legacyimage'
+import Image from 'next/legacy/image'
 import { getPlaiceholder } from 'plaiceholder' 
 import { eyecatchLocal } from '@/lib/constants'
+import { siteMeta } from '@/lib/constants'
+import { openGraphMetadata, twitterMetadata } from '@/lib/baseMetadata'
 
-export default function Post({
-  title,
-  publish,
-  content,
-  eyecatch,
-  categories,
-  description,
-  prevPost,
-  nextPost,
-}){
-  return(
+
+export default  async function Post({
+  params })
+  {
+    const slug = params.slug
+    const post = await getPostBySlug(slug)
+    const { title, publishDate: publish, content, categories } = post
+    const description = extractText(content)
+    const eyecatch = post.eyecatch ?? eyecatchLocal
+    const { base64 } = await getPlaiceholder(eyecatch.url)
+    eyecatch.blurDataURL = base64
+  
+    const allSlugs = await getAllSlugs()
+    const [prevPost, nextPost] = prevNextPost(allSlugs, slug)
+  
+    return(
     <Container>
-      <Meta
-        pageTitle={title}
-        pageDesc={description}
-        pageImg={eyecatch.url}
-        pageImgW={eyecatch.width}
-        pageImgH={eyecatch.height}
-        />
       <article>
         <PostHeader title={title} subTitle="Blog Article" publish={publish}/>
 
@@ -69,39 +68,49 @@ export default function Post({
     </Container>
   )
 }
-export async function getStaticPaths(){
+
+/*404*/
+export const dynamicParams = false
+export async function generateStaticParams(){
   const allSlugs = await getAllSlugs()
-  return {
-    paths: allSlugs.map(({ slug }) => `/blog/${slug}`),
-    fallback: false,
-  }
+  
+  return allSlugs.map(({ slug }) => {
+      return { slug: slug }
+  })
 }
 
-export async function getStaticProps(context){
-  const slug = context.params.slug
+//meta
+const { siteTitle, siteUrl } = siteMeta
+export async function generateMetadata({ params }) {
+  const slug = params.slug
   const post = await getPostBySlug(slug)
-  if(!post){
-    return { notFound: true }
-  } else {
-  const description = extractText(post.content)
+  const { title: pageTitle, publishDate: publish, content, categories } = post
+  const pageDesc = extractText(content)
   const eyecatch = post.eyecatch ?? eyecatchLocal
-  const { base64 } = await getPlaiceholder(eyecatch.url)
-  eyecatch.blurDataURL = base64
-
-  const allSlugs = await getAllSlugs()
-  const [prevPost, nextPost] = prevNextPost(allSlugs, slug)
-
-  return{
-    props:{
-      title: post.title,
-      publish: post.publishDate,
-      content: post.content,
-      eyecatch: eyecatch,
-      categories: post.categories,
-      description: description,
-      prevPost: prevPost,
-      nextPost: nextPost,
-      },
-    }
+  const ogpTitle = `${pageTitle} | ${siteTitle}`
+  const ogpUrl = new URL(`/blog/${slug}`, siteUrl).toString()
+  const metadata = {
+  title: pageTitle,
+  description: pageDesc,
+  openGraph: {
+  ...openGraphMetadata,
+  title: ogpTitle,
+  description: pageDesc,
+  url: ogpUrl,
+  images: [
+  {
+  url: eyecatch.url,
+  width: eyecatch.width,
+  height: eyecatch.height,
+  },
+  ],
+  },
+  twitter: {
+  ...twitterMetadata,
+  title: ogpTitle,
+  description: pageDesc,
+  images: [eyecatch.url],
+  },
   }
+  return metadata
 }
