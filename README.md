@@ -1,6 +1,6 @@
 # Next.js blog
-Next.js 12系
-microCMS仕様
+Next.js 14系
+microCMSを使用した更新サイトです。
 
 ## css-variable
 --icon-size
